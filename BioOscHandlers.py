@@ -1,108 +1,136 @@
-from BioMathTools import *
-from osc4py3 import oscbuildparse
-from osc4py3.as_eventloop import *
+import BioDataCapture
+import time
+
+data_holder = BioDataCapture.DataHolder()
+
+scene_manager = None
+timeout = 0.0001
+delay = 0
+data_received = False
 
 
-Needed = []
+def set_scene(scene_number):
 
-DataStacker = None
-
-
-class ValueHolder:
-    def __init__(self):
-        self.value = None
-    def setvalue(self, value):
-        self.value = value
-    def getvalue(self):
-        return self.value
-
-def sensorsHandler(s, x, y):
-    DataStacker.DataStack.update({"sensorsHandler": (s, x, y)})
-
-def quaternionHandler(s, x, y, x1):
-    DataStacker.DataStack.update({"quaternionHandler": (s, x, y, x1)})
-
-def batteryHandler(s, x, y):
-    DataStacker.DataStack.update({"batteryHandler": (s, x, y)})
-
-def linearHandler(s, x, y):
-    DataStacker.DataStack.update({"linearHandler": (s, x, y)})
-    # A1 = s
-    # A1_Bin = SwitchThreshold(A1)
-    # A1_msg = oscbuildparse.OSCMessage("/altitude", None, [A1_Bin])
-    # osc_send(A1_msg, "to maxmsp")
-
-def altitudehandler(s):
-    DataStacker.DataStack.update({"altitudehandler": (s)})
+    if time.clock()-delay > timeout:
+        return
+    scene_manager.live_scene = scene_manager.scenes[scene_number]
 
 
-def eegdatahandler(A1=None, A2=None, A3=None, A4=None, A5=None, A6=None, A7=None, A8=None):
-    DataStacker.DataStack.update({"eegdatahandler": (A1, A2, A3, A4, A5, A6, A7, A8)})
-    # eeg1graph.next_frame(A1)
-    # pass
+def sensors_handler(s, x, y):
+
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("sensors_handler", (s, x, y))
 
 
-def analoguehandler(A1, A2, A3, A4, A5, A6, A7, A8):
-    DataStacker.DataStack.update({"analoguehandler": (A1, A2, A3, A4, A5, A6, A7, A8)})
-    # global Needed
-    # if "A1" in Needed:
-    #     global last_A1_bin
-    #     global recthis
-    #     A1_Bin = SwitchThreshold(A1)
-    #     if A1_Bin == 1:
-    #         if last_A1_bin == 0:
-    #             try:recthis.StopStream()
-    #             except:pass
-    #             recthis = AudioTools.RecordStream()
-    #             recthis.SetStream()
-    #         elif last_A1_bin == 1:
-    #             recthis.RecordAFrame()
-    #
-    #     elif A1_Bin == 0:
-    #         if last_A1_bin == 1:
-    #             try:recthis.StopStream()
-    #             except:pass
-    #             recthis.SetTrackToLastRecord()
-    #
-    #         elif last_A1_bin == 0:
-    #             recthis.PlayNextChunkOfTrack()
-    #
-    #     last_A1_bin = A1_Bin
-    #
-    #     A1_msg = oscbuildparse.OSCMessage("/A1", None, [A1_Bin])
-    #     osc_send(A1_msg, "to maxmsp")
-    #
-    # if "A2" in Needed:
-    #     A2_Bin = SwitchThreshold(A2)
-    #     A2_msg = oscbuildparse.OSCMessage("/A2", None, [A2_Bin])
-    #     osc_send(A2_msg, "to maxmsp")
-    #
-    # if "A3" in Needed:
-    #     A3_Bin = SwitchThreshold(A3)
-    #     A3_msg = oscbuildparse.OSCMessage("/A3", None, [A3_Bin])
-    #     osc_send(A3_msg, "to maxmsp")
-    #
-    # if "A4" in Needed:
-    #     A4_Bin = SwitchThreshold(A4)
-    #     A4_msg = oscbuildparse.OSCMessage("/A4", None, [A4_Bin])
-    #     osc_send(A4_msg, "to maxmsp")
-    #
-    # if "A5" in Needed:
-    #     A5_Bin = SwitchThreshold(A5)
-    #     A5_msg = oscbuildparse.OSCMessage("/A5", None, [A5_Bin])
-    #     osc_send(A5_msg, "to maxmsp")
-    #
-    # if "A6" in Needed:
-    #     A6_Bin = SwitchThreshold(A6)
-    #     A6_msg = oscbuildparse.OSCMessage("/A6", None, [A6_Bin])
-    #     osc_send(A6_msg, "to maxmsp")
-    #
-    # if "A7" in Needed:
-    #     A7_Bin = SwitchThreshold(A7)
-    #     A7_msg = oscbuildparse.OSCMessage("/A7", None, [A7_Bin])
-    #     osc_send(A7_msg, "to maxmsp")
-    #
-    # if "A8" in Needed:
-    #     A8_Bin = SwitchThreshold(A8)
-    #     A8_msg = oscbuildparse.OSCMessage("/A8", None, [A8_Bin])
-    #     osc_send(A8_msg, "to maxmsp")
+def quaternion_handler(value01=None, value02=None, value03=None, value04=None):
+    global data_received
+    data_received = True
+    data_holder.update_data("quaternion01", value01)
+    data_holder.update_data("quaternion02", value02)
+    data_holder.update_data("quaternion03", value03)
+    data_holder.update_data("quaternion04", value04)
+
+def rotation_matrix(x, y, z, rot_x, rot_y, rot_z, vx, vy, vz):
+    data_holder.update_data("matrix1", x)
+    data_holder.update_data("matrix2", y)
+    data_holder.update_data("matrix3", z)
+    data_holder.update_data("matrix4", rot_x)
+    data_holder.update_data("matrix5", rot_y)
+    data_holder.update_data("matrix6", rot_z)
+    data_holder.update_data("matrix7", vx)
+    data_holder.update_data("matrix8", vy)
+    data_holder.update_data("matrix9", vz)
+
+
+
+def battery_handler(s, x, y):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("batteryHandler", (s, x, y))
+
+
+def linear_handler(s, x, y):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("linear_handler", (s, x, y))
+
+
+def altitude_handler(s):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("altitude_handler", s)
+
+
+def eeg_raw_data_handler(a1=None, a2=None, a3=None, a4=None, a5=None):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("eeg_data_handler", (a1, a2, a3, a4, a5))
+
+
+def analogue_handler(a1, a2, a3, a4, a5, a6, a7, a8):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("analogue_01", a1)
+    data_holder.update_data("analogue_02", a2)
+    data_holder.update_data("analogue_03", a3)
+    data_holder.update_data("analogue_04", a4)
+    data_holder.update_data("analogue_05", a5)
+    data_holder.update_data("analogue_06", a6)
+    data_holder.update_data("analogue_07", a7)
+    data_holder.update_data("analogue_08", a8)
+
+
+def eeg_delta_handler(value):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("eeg_delta", value)
+
+
+def eeg_alpha_handler(value):
+    if time.clock()-delay > timeout:
+        print(time.clock()-delay)
+        return
+    data_holder.update_data("eeg_alpha", value)
+
+
+def eeg_beta_handler(value):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("eeg_beta", value)
+
+
+def eeg_theta_handler(value):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("eeg_theta", value)
+
+
+def eeg_gamma_handler(value):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("eeg_gamma", value)
+
+
+def eeg_accelerometer_handler(value):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("muse_accelerometer", value)
+
+
+def eeg_gyro_handler(value):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("muse_gyro", value)
+
+
+def eeg_touching_forehead_handler(value):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("muse_touching_forehead", value)
+
+
+def eeg_horseshoe_handler(value):
+    if time.clock()-delay > timeout:
+        return
+    data_holder.update_data("muse_horseshoe", value)

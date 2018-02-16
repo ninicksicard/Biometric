@@ -5,7 +5,7 @@ import socket
 import warnings
 import matplotlib
 import scipy.signal as signal
-
+import math
 
 warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
 
@@ -15,12 +15,13 @@ avlist = []
 
 def normnumpy(hz,intensity,  dlist):
 
-    B, A = signal.butter(intensity, hz, output='ba')
+    B = signal.butter(intensity, hz, output='ba')
 
 # Second, apply the filter
-    tempf = signal.filtfilt(B,A, dlist)
+    tempf = signal.filtfilt(B, A, dlist)
     print(tempf, "tempf")
     return(tempf)
+
 
 def SwitchThreshold(value, threshold=0.5):
     if value <= threshold:
@@ -28,22 +29,115 @@ def SwitchThreshold(value, threshold=0.5):
     else:
         return 1
 
-def Average(drange, dlist):
-    dtot = 0
-    if len(dlist) < 1:
-        return dlist[:-1]
-    if drange > len(dlist):
-        drange = len(dlist)
-    for x in range((len(dlist)-drange)-1, len(dlist)-1):
-        dtot += dlist[x]
-    avg = dtot/drange
+
+def dmx_inverted_exponential_half_max(value):
+
+    dmx = -((32 * 10 * value)-16) ^ 2+255
+
+    if dmx >= 255:
+
+        return 255
+
+    if dmx <= 0:
+
+        return 0
+
+    return dmx
+
+
+def dmx_inverted_exponential_max(value):
+
+    dmx = 255-(((value/16)-16)*((value/16)-16))
+
+    if dmx >= 255:
+
+        return 255
+
+    if dmx <= 0:
+
+        return 0
+
+    return dmx
+
+
+def dmx_exponential_half_max(value):
+
+    dmx = (32 * value) ^ 2
+
+    if dmx >= 255:
+
+        return 255
+
+    if dmx <= 0:
+
+        return 0
+
+    return dmx
+
+
+def dmx_exponential_max(value):
+
+    dmx = (16 * value) ^ 2
+
+    if dmx >= 255:
+
+        return 255
+
+    if dmx <= 0:
+
+        return 0
+
+    return dmx
+
+
+def average(list_to_average, average_range=None):
+
+    added_value = 0
+
+    if len(list_to_average) < 1:
+
+        return 0
+
+    if not average_range:
+
+        average_range = len(list_to_average)
+
+    elif average_range > len(list_to_average):
+
+        average_range = len(list_to_average)
+
+    for x in range((len(list_to_average)-average_range)-1, len(list_to_average)-1):
+
+        added_value += list_to_average[x]
+
+    avg = added_value/average_range
+
     return avg
+
 
 def managelistlenght(list, sizelimit):
     while len(list) > sizelimit:
         del list[0]
 
 
+def quaternion_to_euler_angle(w, x, y, z):
+    ysqr = y * y
+
+    t0 = +2.0 * (w * x + y * z)
+    t1 = +1.0 - 2.0 * (x * x + ysqr)
+    x = math.degrees(math.atan2(t0, t1))
+
+    t2 = +2.0 * (w * y - z * x)
+    t2 = +1.0 if t2 > +1.0 else t2
+    t2 = -1.0 if t2 < -1.0 else t2
+
+    y = math.degrees(math.asin(t2))
+
+    t3 = +2.0 * (w * z + x * y)
+    t4 = +1.0 - 2.0 * (ysqr + z * z)
+    z = math.degrees(math.atan2(t3, t4))
+
+    return x, y, z
 
 
 class NGIMULNK():

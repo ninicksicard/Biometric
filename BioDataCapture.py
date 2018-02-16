@@ -1,109 +1,42 @@
+class DataHolder:
 
-from osc4py3.as_eventloop import *
+    def __init__(self, max_history_length=10):
 
+        self.raw_data_stack = {}
 
-DataStacker = None
+        self.data_history = []
 
+        self.an_history = []
 
-def sensorsHandler(s, x, y):
+        self.max_history_length = max_history_length
 
-    DataStacker.DataStack.update({"sensorsHandler": (s, x, y)})
+    def update_data(self, key, value):
 
+        self.raw_data_stack.update({key: value})
 
-def quaternionHandler(s, x, y, x1):
+    def save_history(self):
 
-    DataStacker.DataStack.update({"quaternionHandler": (s, x, y, x1)})
+        self.data_history.append(self.raw_data_stack)
 
+        if len(self.data_history) > self.max_history_length:
 
-def batteryHandler(s, x, y):
+            self.data_history.pop(0)
 
-    DataStacker.DataStack.update({"batteryHandler": (s, x, y)})
+    def get_an_history(self, key, size, source="default"):
+        self.an_history = []
+        if source is "default":
 
+            source = self.data_history
 
-def linearHandler(s, x, y):
+        while size:
 
-    DataStacker.DataStack.update({"linearHandler": (s, x, y)})
+            size -= 1
+            try:
+                self.an_history.append(source[size][key])
 
+            except IndexError:
+                size = 0
+            except KeyError:
+                size = 0
 
-def altitudehandler(s):
-
-    DataStacker.DataStack.update({"altitudehandler": (s)})
-
-
-def eegdatahandler(A1=None, A2=None, A3=None, A4=None, A5=None, A6=None, A7=None, A8=None):
-
-    DataStacker.DataStack.update({"eegdatahandler": (A1, A2, A3, A4, A5, A6, A7, A8)})
-
-
-def analoguehandler(A1, A2, A3, A4, A5, A6, A7, A8):
-
-    print("received")
-    DataStacker.DataStack.update({"analoguehandler": (A1, A2, A3, A4, A5, A6, A7, A8)})
-
-
-class OscSignalManager:
-
-    def __init__(self, ports, needed):
-
-        global DataStacker
-        DataStacker = self
-        self.DataStack = {}
-
-        self.Needed = needed
-        osc_startup()
-
-        self.firstserver = 0
-        self.localip = '192.168.1.15'
-        self.addresses = []
-
-        for p in ports:
-
-            self.addresses.append((self.localip, p))
-
-        self.startservers()
-        self.sethandlers()
-        self.loop_osc_process()
-
-    def loop_osc_process(self):
-
-        finished = False
-
-        while not finished:
-
-            print(self.DataStack)
-            osc_process()
-
-    def startservers(self):
-
-        thisserver = str(self.firstserver)
-
-        for adress, port in self.addresses:
-
-            osc_udp_server(adress, port, str("Server"+thisserver))
-            thisserver = str(int(thisserver)+1)
-
-    def sethandlers(self):
-
-        for path, handler in self.Needed:
-
-            if path[:1] == "/":
-
-                print(type(handler))
-
-                if type(handler) is tuple:
-
-                    for h in handler:
-
-                        print(path, (40-len(path))*' ', str(h)[9:-22])
-                        osc_method(path, h)
-
-                elif str(type(handler)) == "<class 'function'>":
-
-                    osc_method(path, handler)
-                    print(path, (40-len(path))*' ', str(handler)[9:-22])
-
-                else:
-
-                    print("verify handler's name and format. should be function 'handler' or tuple '(handler1, handler2)'")
-
-
+        return self.an_history
