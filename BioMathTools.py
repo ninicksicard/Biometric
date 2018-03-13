@@ -6,21 +6,23 @@ import warnings
 import matplotlib
 import scipy.signal as signal
 import math
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.fftpack import fft, rfft, fftfreq, rfftfreq
+from scipy.signal import blackman
 
 warnings.filterwarnings("ignore", category=matplotlib.cbook.mplDeprecation)
-
-
 dlist = []
 avlist = []
 
-def normnumpy(hz,intensity,  dlist):
-
-    B = signal.butter(intensity, hz, output='ba')
-
-# Second, apply the filter
-    tempf = signal.filtfilt(B, A, dlist)
-    print(tempf, "tempf")
-    return(tempf)
+# def normnumpy(hz,intensity,  dlist):
+#
+#     B = signal.butter(intensity, hz, output='ba')
+#
+# # Second, apply the filter
+#     tempf = signal.filtfilt(B, A, dlist)
+#     print(tempf, "tempf")
+#     return(tempf)
 
 
 def SwitchThreshold(value, threshold=0.5):
@@ -90,8 +92,9 @@ def dmx_exponential_max(value):
     return dmx
 
 
-def average(list_to_average, average_range=None):
-
+def average(list_to_average, avg_type="mine", average_range=None):
+    if avg_type is "numpy":
+        return np.average(list_to_average)
     added_value = 0
 
     if len(list_to_average) < 1:
@@ -140,13 +143,56 @@ def quaternion_to_euler_angle(w, x, y, z):
     return x, y, z
 
 
+def my_zip(history):
+    histories = []
+    list_of_histories = []
+    reformed_list = []
+    if type(history) is list:
+        if len(history):
+            if type(history[0]) is list or tuple:
+                sub_item = 0
+
+                while sub_item < len(history[0]):
+                    item = 0
+                    while item < len(history):
+                        if sub_item != 2:
+                            histories.append(history[item][sub_item])
+                        item += 1
+
+                    list_of_histories.append(histories)
+                    histories = []
+                    sub_item += 1
+            reformed_list = [np.subtract(list_of_histories[0], list_of_histories[2]),
+                             np.subtract(list_of_histories[1], list_of_histories[2]),
+                             np.subtract(list_of_histories[3], list_of_histories[2]),
+                             np.subtract(list_of_histories[4], list_of_histories[2])
+                             ]
+    return reformed_list
+
+
+def get_fft(history):
+
+    y = history
+    N = len(y)
+    yf = fft(y)[5:]
+
+    # trim = 20
+    # T = 1.0 /900
+    # xf = np.linspace(0, 1.0/(2.0*T), N//2)
+    #
+    # plt.plot(xf[:trim], (2.0/N * np.abs(yf[0:N//2]))[:trim])
+    # plt.grid()
+    #
+    # plt.show()
+    return (2.0/N * np.abs(yf[0:N//2]))
+
 class NGIMULNK():
     def __init__(self):
-        self.sensors = [Average(50, 100, "/analogue"),
-                        Average(10, 100, "/quaternion"),
-                        Average(1, 100, "/battery"),
-                        Average(50, 100, "/linear"),
-                        Average(50, 100, "/altitude"),
+        self.sensors = [average(50, 100, "/analogue"),
+                        average(10, 100, "/quaternion"),
+                        average(1, 100, "/battery"),
+                        average(50, 100, "/linear"),
+                        average(50, 100, "/altitude"),
                         ]
 
         self.send_address = '192.168.1.97', 9000

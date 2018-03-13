@@ -4,7 +4,7 @@ import time
 data_holder = BioDataCapture.DataHolder()
 
 scene_manager = None
-timeout = 0.0001
+timeout = 100
 delay = 0
 data_received = False
 
@@ -24,6 +24,9 @@ def sensors_handler(s, x, y):
 
 
 def quaternion_handler(value01=None, value02=None, value03=None, value04=None):
+    if time.clock()-delay > timeout:
+        return
+
     global data_received
     data_received = True
     data_holder.update_data("quaternion01", value01)
@@ -31,7 +34,10 @@ def quaternion_handler(value01=None, value02=None, value03=None, value04=None):
     data_holder.update_data("quaternion03", value03)
     data_holder.update_data("quaternion04", value04)
 
+
 def rotation_matrix(x, y, z, rot_x, rot_y, rot_z, vx, vy, vz):
+    if time.clock()-delay > timeout:
+        return
     data_holder.update_data("matrix1", x)
     data_holder.update_data("matrix2", y)
     data_holder.update_data("matrix3", z)
@@ -62,10 +68,14 @@ def altitude_handler(s):
     data_holder.update_data("altitude_handler", s)
 
 
-def eeg_raw_data_handler(a1=None, a2=None, a3=None, a4=None, a5=None):
+def eeg_raw_data_handler(a1=None, a2=None, a3=None, a4=None, a5=None,):
+    global data_received
+    data_received = True
     if time.clock()-delay > timeout:
         return
-    data_holder.update_data("eeg_data_handler", (a1, a2, a3, a4, a5))
+    data_holder.update_data("eeg_raw_data", (a1, a2, a3, a4, a5))
+
+
 
 
 def analogue_handler(a1, a2, a3, a4, a5, a6, a7, a8):
@@ -89,7 +99,6 @@ def eeg_delta_handler(value):
 
 def eeg_alpha_handler(value):
     if time.clock()-delay > timeout:
-        print(time.clock()-delay)
         return
     data_holder.update_data("eeg_alpha", value)
 

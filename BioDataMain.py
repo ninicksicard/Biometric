@@ -5,7 +5,7 @@ import BioOscHandlers
 import time
 
 
-my_ip_address = '192.168.1.15'
+my_ip_address = '192.168.1.6'
 my_receiving_osc_port = [8019]
 late = 0
 
@@ -33,13 +33,10 @@ needed_values = [
 servers = OscSignalManager(my_ip_address, my_receiving_osc_port, needed_values)
 
 
-def store_data():
 
+
+
+def store_data():
+    BioOscHandlers.data_received = False
     osc_process()
 
-    if BioOscHandlers.data_received is True:
-        BioOscHandlers.data_received = False
-        return True
-
-    elif BioOscHandlers.data_received is False:
-        return False

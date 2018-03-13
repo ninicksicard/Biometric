@@ -1,6 +1,7 @@
 from osc4py3.as_eventloop import *
 from osc4py3 import oscbuildparse
-
+import time
+# from BioIntOptions import debug
 ip_to_reach = "192.168.255.255"
 port_to_reach = "50005"
 
@@ -15,8 +16,17 @@ def add_message(path="/exemple/path", format_type=",fff", message="['example', '
 
 
 def send_all():
+
+    timed = time.clock()
+
     global to_send
-    for thing in to_send:
-        # print("sending all")
-        osc_send(thing, "output_server")
+
+    if len(to_send):
+
+        for thing in to_send:
+
+            # debug("sending osc", (time.clock() - timed)*1000, "\n")
+
+            osc_send(thing, "output_server")
+
     to_send = []
