@@ -1,4 +1,6 @@
 import ast
+import time
+
 class DataHolder:
 
     def __init__(self, max_history_length=50):
@@ -12,11 +14,13 @@ class DataHolder:
         self.max_history_length = max_history_length
 
     def update_data(self, key, value):
+
         self.raw_data_stack.update({key: value})
 
         self.history_saved = 0
 
     def save_history(self):
+
         if self.history_saved == 0:
 
             self.data_history.append(str(self.raw_data_stack))
@@ -34,20 +38,30 @@ class DataHolder:
 
             source = self.data_history
 
+        timed = time.clock()
         while size:
-
             size -= 1
-            try:
+
+            if len(source) >= size+1:
+
                 self.an_history.append(ast.literal_eval(source[size])[key])
 
-            except IndexError:
-                size = 0
-            except KeyError:
-                size = 0
-            except ValueError:
-                print("VALUE ERROR IN BIODATACAPTURE LINE 48")
-                print("VALUE ERROR IN BIODATACAPTURE LINE 48")
-                print("VALUE ERROR IN BIODATACAPTURE LINE 48")
-                print("VALUE ERROR IN BIODATACAPTURE LINE 48")
-                print("VALUE ERROR IN BIODATACAPTURE LINE 48")
+            else: return self.an_history
+
+
+            # except IndexError:
+            #     print("indexerror")
+            #     size = 0
+            #
+            # except KeyError:
+            #     print("keyerror")
+            #     size = 0
+            #
+            # except ValueError:
+            #     print("VALUE ERROR IN BIODATACAPTURE LINE 48")
+            #     print("VALUE ERROR IN BIODATACAPTURE LINE 48")
+            #     print("VALUE ERROR IN BIODATACAPTURE LINE 48")
+            #     print("VALUE ERROR IN BIODATACAPTURE LINE 48")
+            #     print("VALUE ERROR IN BIODATACAPTURE LINE 48")
+        # print("get an_history", (time.clock() - timed)*1000)
         return self.an_history

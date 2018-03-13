@@ -49,7 +49,6 @@ def rotation_matrix(x, y, z, rot_x, rot_y, rot_z, vx, vy, vz):
     data_holder.update_data("matrix9", vz)
 
 
-
 def battery_handler(s, x, y):
     if time.clock()-delay > timeout:
         return
@@ -70,12 +69,12 @@ def altitude_handler(s):
 
 def eeg_raw_data_handler(a1=None, a2=None, a3=None, a4=None, a5=None,):
     global data_received
+
     data_received = True
+    # print((a1, a2, a3, a4, a5))
     if time.clock()-delay > timeout:
         return
     data_holder.update_data("eeg_raw_data", (a1, a2, a3, a4, a5))
-
-
 
 
 def analogue_handler(a1, a2, a3, a4, a5, a6, a7, a8):

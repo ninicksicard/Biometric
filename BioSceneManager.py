@@ -61,7 +61,6 @@ class SceneManager:
             get_datas()
             self.steps = [store_data_pass,
                           save_history,
-
                           eeg_activity_1,
                           eeg_activity_2,
                           eeg_activity_3,

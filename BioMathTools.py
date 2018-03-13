@@ -119,6 +119,7 @@ def average(list_to_average, avg_type="mine", average_range=None):
 
 
 def managelistlenght(list, sizelimit):
+
     while len(list) > sizelimit:
         del list[0]
 
@@ -155,26 +156,29 @@ def my_zip(history):
                 while sub_item < len(history[0]):
                     item = 0
                     while item < len(history):
-                        if sub_item != 2:
-                            histories.append(history[item][sub_item])
+
+                        histories.append(history[item][sub_item])
                         item += 1
 
                     list_of_histories.append(histories)
                     histories = []
                     sub_item += 1
-            reformed_list = [np.subtract(list_of_histories[0], list_of_histories[2]),
-                             np.subtract(list_of_histories[1], list_of_histories[2]),
-                             np.subtract(list_of_histories[3], list_of_histories[2]),
-                             np.subtract(list_of_histories[4], list_of_histories[2])
-                             ]
+
+                reformed_list = [np.subtract(list_of_histories[0], list_of_histories[2]),
+                                 np.subtract(list_of_histories[1], list_of_histories[2]),
+                                 np.subtract(list_of_histories[3], list_of_histories[2]),
+                                 np.subtract(list_of_histories[4], list_of_histories[2])
+                                 ]
+                return [reformed_list[1]]
     return reformed_list
 
 
 def get_fft(history):
 
     y = history
+
     N = len(y)
-    yf = fft(y)[5:]
+    yf = fft(y)
 
     # trim = 20
     # T = 1.0 /900
@@ -186,70 +190,71 @@ def get_fft(history):
     # plt.show()
     return (2.0/N * np.abs(yf[0:N//2]))
 
-class NGIMULNK():
-    def __init__(self):
-        self.sensors = [average(50, 100, "/analogue"),
-                        average(10, 100, "/quaternion"),
-                        average(1, 100, "/battery"),
-                        average(50, 100, "/linear"),
-                        average(50, 100, "/altitude"),
-                        ]
 
-        self.send_address = '192.168.1.97', 9000
-        self.receive_address = '192.168.1.187', 8097
-
-        self.c = OSC.OSCClient()
-        self.c.connect(self.send_address)
-        self.msg = OSC.OSCMessage()
-        self.msg.setAddress('/wifi/send/ip')
-        self.msg.append(str(socket.gethostbyname(socket.gethostname())))
-        self.c.send(self.msg)
-        self.c.close()
-
-        self.s = OSC.OSCServer(self.receive_address)
-
-        self.s.addDefaultHandlers()
-        self.s.addMsgHandler("/sensors", self.sensorsHandler)
-        self.s.addMsgHandler("/quaternion", self.quaternionHandler)
-        self.s.addMsgHandler("/battery", self.batteryHandler)
-        self.s.addMsgHandler("/linear", self.linearHandler)
-        self.s.addMsgHandler("/altitude", self.altitudehandler)
-        self.s.addMsgHandler("/analogue", self.analogueHandler)
-        self.s.addMsgHandler("/wifi/send/ip", self.dontdo)
-        self.s.addMsgHandler("/error", self.errorhandler)
-
-
-
-    def RandomNewData(self):
-        number = random.randrange(0,10)
-        self.analogueHandler(args=[(number*0.1),"_"])
-
-    def sensorsHandler(self, add, tags, args, source):
-        pass
-
-    def quaternionHandler(self, add, tags, args, source):
-        pass
-        # self.sensors[1].newInput(args[0])
-
-    def batteryHandler(self, add, tags, args, source):
-        pass
-
-    def linearHandler(self, add, tags, args, source):
-        pass
-        # self.sensors[3].newInput(args[0])
-
-    def altitudehandler(self, add, tags, args, source):
-        pass
-        # self.sensors[4].newInput(args[0])
-
-    def analogueHandler(self, add, tags, args, source):
-        self.sensors[0].newInput(args[0])
-
-    def errorhandler(self, add, tags, args, source):
-        pass
-
-    def dontdo(self, add, tags, args, source):
-        pass
+# class NGIMULNK():
+#     def __init__(self):
+#         self.sensors = [average(50, 100, "/analogue"),
+#                         average(10, 100, "/quaternion"),
+#                         average(1, 100, "/battery"),
+#                         average(50, 100, "/linear"),
+#                         average(50, 100, "/altitude"),
+#                         ]
+#
+#         self.send_address = '192.168.1.97', 9000
+#         self.receive_address = '192.168.1.187', 8097
+#
+#         self.c = OSC.OSCClient()
+#         self.c.connect(self.send_address)
+#         self.msg = OSC.OSCMessage()
+#         self.msg.setAddress('/wifi/send/ip')
+#         self.msg.append(str(socket.gethostbyname(socket.gethostname())))
+#         self.c.send(self.msg)
+#         self.c.close()
+#
+#         self.s = OSC.OSCServer(self.receive_address)
+#
+#         self.s.addDefaultHandlers()
+#         self.s.addMsgHandler("/sensors", self.sensorsHandler)
+#         self.s.addMsgHandler("/quaternion", self.quaternionHandler)
+#         self.s.addMsgHandler("/battery", self.batteryHandler)
+#         self.s.addMsgHandler("/linear", self.linearHandler)
+#         self.s.addMsgHandler("/altitude", self.altitudehandler)
+#         self.s.addMsgHandler("/analogue", self.analogueHandler)
+#         self.s.addMsgHandler("/wifi/send/ip", self.dontdo)
+#         self.s.addMsgHandler("/error", self.errorhandler)
+#
+#
+#
+#     def RandomNewData(self):
+#         number = random.randrange(0,10)
+#         self.analogueHandler(args=[(number*0.1),"_"])
+#
+#     def sensorsHandler(self, add, tags, args, source):
+#         pass
+#
+#     def quaternionHandler(self, add, tags, args, source):
+#         pass
+#         # self.sensors[1].newInput(args[0])
+#
+#     def batteryHandler(self, add, tags, args, source):
+#         pass
+#
+#     def linearHandler(self, add, tags, args, source):
+#         pass
+#         # self.sensors[3].newInput(args[0])
+#
+#     def altitudehandler(self, add, tags, args, source):
+#         pass
+#         # self.sensors[4].newInput(args[0])
+#
+#     def analogueHandler(self, add, tags, args, source):
+#         self.sensors[0].newInput(args[0])
+#
+#     def errorhandler(self, add, tags, args, source):
+#         pass
+#
+#     def dontdo(self, add, tags, args, source):
+#         pass
 
 
 

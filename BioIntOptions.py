@@ -4,12 +4,14 @@ import time
 import BioOscHandlers
 from BioDataMain import store_data
 
+
 def debug(name, *args):
     show_or_not = False
     if show_or_not is True:
         print(name, " " * (30-len(name)), *args)
 
 # global variables
+
 
 data = None
 fft_of_history = []
@@ -28,10 +30,10 @@ data_received = False
 sticky_dmx = 0
 
 
-#scene 02 settings
+# scene 02 settings
 
-purple_light_high = 1000
-purple_light_low = 200
+purple_light_high = 7000
+purple_light_low =1
 how_sticky = 100
 
 
@@ -98,8 +100,8 @@ def purple_light():
         sticky_dmx = 1
 
     add_message("/lx/sub/01", ",f", sticky_dmx)
-    if BioOscHandlers.data_received:
-        print("purple =", sticky_dmx, " "*(40-len( str(sticky_dmx))),"position = ", pos1, " "*sticky_dmx, "YOO")
+    # if BioOscHandlers.data_received:
+        # print("purple =", sticky_dmx, " "*(40-len( str(sticky_dmx))),"position = ", pos1, " "*sticky_dmx, "YOO")
 
     debug("purple Light", (time.clock() - timed)*1000)
 
@@ -118,6 +120,7 @@ def store_data_pass():
 
 
 def save_history():
+
     if BioOscHandlers.data_received is False:
         return
     timed = time.clock()
@@ -160,16 +163,21 @@ def head_position_normalized():
 
 
 def eeg_activity_1():
+
     if BioOscHandlers.data_received is False:
         return
+
     timed = time.clock()
 
     global data
     global eeg_activity_history
-
-    eeg_activity_history = data.get_an_history("eeg_raw_data", size=50)    # list of ((a1,a2,a3,a4,a5) , (a1,a2,a3,a4,a5))
-
+    try:
+        eeg_activity_history = data.get_an_history("eeg_raw_data", size=25)    # list of ((a1,a2,a3,a4,a5) , (a1,a2,a3,a4,a5))
+    except Exception as e:
+        print(e)
     debug("eeg_activity_1", (time.clock() - timed)*1000)
+
+    return
 
 
 def eeg_activity_2():
@@ -189,6 +197,8 @@ def eeg_activity_2():
 
     debug("eeg_activity_2", (time.clock() - timed)*1000)
 
+    return
+
 
 def eeg_activity_3():
 
@@ -203,7 +213,6 @@ def eeg_activity_3():
 
         eeg_activity_average = BioMathTools.average(ffts, "numpy")*1000
 
-
     debug("eeg_activity_3", (time.clock() - timed)*1000, str(eeg_activity_average)[1:8])
 
     global eeg_activity_simplified
@@ -214,6 +223,7 @@ def eeg_activity_3():
 
         return int(float(str(eeg_activity_average)[1:5 ].replace("-", "").replace("+", "")))
 
+    return
 
 def wait_loop():
 
