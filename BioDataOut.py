@@ -1,32 +1,55 @@
 from osc4py3.as_eventloop import *
 from osc4py3 import oscbuildparse
 import time
-# from BioIntOptions import debug
-ip_to_reach = "192.168.255.255"
-port_to_reach = "50005"
 
-osc_udp_client(ip_to_reach, port_to_reach, "output_server")
+settings = None
 
-to_send = []
+
+def debug(name, *args):
+    show_or_not = settings.debug
+    if show_or_not is True:
+        print(name, " " * (30-len(name)), *args)
+
+
+def set_client():
+
+    if settings.data_received is False:
+        return
+
+    timed = time.clock()
+
+    osc_udp_client(settings.ip_to_reach, settings.port_to_reach, "output_server")
+
+    debug("set_client", (time.clock() - timed)*1000)
 
 
 def add_message(path="/exemple/path", format_type=",fff", message="['example', 'of', 'values']"):
-    # print(path, format_type, message)
-    to_send.append(oscbuildparse.OSCMessage(path, format_type, message))
+
+    if settings.data_received is False:
+        return
+
+    timed = time.clock()
+
+    settings.to_send.append(oscbuildparse.OSCMessage(path, format_type, message))
+
+    debug("add_message", (time.clock() - timed)*1000)
 
 
 def send_all():
 
+    if settings.data_received is False:
+        return
+
     timed = time.clock()
 
-    global to_send
+    if len(settings.to_send):
 
-    if len(to_send):
-
-        for thing in to_send:
-
-            # debug("sending osc", (time.clock() - timed)*1000, "\n")
+        for thing in settings.to_send:
 
             osc_send(thing, "output_server")
 
-    to_send = []
+            print(settings.to_send)
+
+    settings.to_send = []
+
+    debug("send_all", (time.clock() - timed)*1000)

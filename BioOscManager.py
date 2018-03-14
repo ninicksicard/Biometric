@@ -1,5 +1,7 @@
 from osc4py3.as_eventloop import *
 
+settings = None
+
 
 class OscSignalManager:
 
@@ -50,4 +52,3 @@ class OscSignalManager:
                 else:
 
                     print("verify handler's name and format. should be function 'handler' or tuple '(handler1, handler2)'")
-

@@ -1,24 +1,24 @@
-from BioDataMain import *
-import BioMathTools
-from BioIntOptions import *
+import BioIntOptions
+import BioDataMain
 import time
 
-allowed = True
+
+settings = None
 
 
 class SceneManager:
 
     def __init__(self):
 
-        BioOscHandlers.scene_manager = self
+        BioIntOptions.BioOscHandlers.scene_manager = self
 
-        self.scenes = [#self.Scene01(),
+        self.scenes = [self.Scene01(),
                        self.Scene02(),
                        self.Scene03(),
                        self.Scene04()
                        ]
 
-        self.live_scene = self.scenes[0]
+        self.live_scene = self.scenes[settings.first_scene]
 
     def change_live_scene(self, scene_number):
 
@@ -27,18 +27,13 @@ class SceneManager:
     class Scene01:
 
         def __init__(self):
+            self.timed = time.clock()
             self.laps = 0
-            self.data = None
-            self.waiting_laps = 50000
-            self.head_position_history = None
-            self.head_position_average = None
-            self.data_received = None
-            self.steps = [store_data_pass,
-                          save_history,
-                          get_datas,
-                          head_position_normalized,
-                          fade_in_light,
-                          send_all,
+            self.steps = [BioDataMain.store_data,
+                          BioIntOptions.save_history,
+                          BioIntOptions.head_position_normalized,
+                          BioIntOptions.fade_in_light,
+                          BioIntOptions.BioDataOut.send_all,
                           ]
 
         def run_scene(self):
@@ -53,19 +48,13 @@ class SceneManager:
 
         def __init__(self):
             self.laps = 0
-            self.data = None
-            self.waiting_laps = 50000
-            self.head_position_history = None
-            self.head_position_average = None
-            self.data_received = None
-            get_datas()
-            self.steps = [store_data_pass,
-                          save_history,
-                          eeg_activity_1,
-                          eeg_activity_2,
-                          eeg_activity_3,
-                          purple_light,
-                          send_all,
+            self.steps = [BioDataMain.store_data,
+                          BioIntOptions.save_history,
+                          BioIntOptions.eeg_activity_1,
+                          BioIntOptions.eeg_activity_2,
+                          BioIntOptions.eeg_activity_3,
+                          BioIntOptions.purple_light,
+                          BioIntOptions.BioDataOut.send_all,
                           ]
 
         def run_scene(self):
@@ -78,6 +67,17 @@ class SceneManager:
 
     class Scene03:
 
+        def __init__(self):
+            self.laps = 0
+            self.steps = [BioDataMain.store_data,
+                          BioIntOptions.save_history,
+                          BioIntOptions.eeg_activity_1,
+                          BioIntOptions.eeg_activity_2,
+                          BioIntOptions.eeg_activity_3,
+                          BioIntOptions.purple_light,
+                          BioIntOptions.BioDataOut.send_all,
+                          ]
+
         def run_scene(self):
 
             while self.laps < len(self.steps):
@@ -88,6 +88,17 @@ class SceneManager:
 
     class Scene04:
 
+        def __init__(self):
+            self.laps = 0
+            self.steps = [BioDataMain.store_data,
+                          BioIntOptions.save_history,
+                          BioIntOptions.eeg_activity_1,
+                          BioIntOptions.eeg_activity_2,
+                          BioIntOptions.eeg_activity_3,
+                          BioIntOptions.purple_light,
+                          BioIntOptions.BioDataOut.send_all,
+                          ]
+
         def run_scene(self):
 
             while self.laps < len(self.steps):
@@ -95,11 +106,3 @@ class SceneManager:
 
                 self.laps += 1
             self.laps = 0
-
-
-scene_manager = SceneManager()
-
-while allowed:
-
-    scene_manager.live_scene.run_scene()
-
